@@ -1,0 +1,25 @@
+[workspace]
+resolver = "3"
+package.version = "0.1.0"
+package.edition = "2024"
+members = ["day1"]
+
+[workspace.dependencies]
+
+[workspace.lints.rust]
+warnings = "deny"
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "deny"
+pedantic = "deny"
+nursery = "deny"
+# from clippy::restriction
+unwrap_used = "deny"
+expect_used = "deny"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+strip = true

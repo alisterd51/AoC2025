@@ -9,7 +9,7 @@ enum ParsedOps {
 }
 
 #[must_use]
-pub fn parse_homework(input: &str) -> Vec<Problem> {
+pub fn parse_homework_1(input: &str) -> Vec<Problem> {
     let mut problems = vec![];
     let mut parsed_lines = vec![];
     let mut parsed_ops = vec![];
@@ -36,6 +36,64 @@ pub fn parse_homework(input: &str) -> Vec<Problem> {
         for parsed_line in &parsed_lines {
             problem.push(parsed_line[index]);
         }
+        match ops {
+            ParsedOps::Add => problems.push(Problem::Add(problem)),
+            ParsedOps::Multiply => problems.push(Problem::Multiply(problem)),
+        }
+    }
+
+    problems
+}
+
+#[must_use]
+pub fn parse_homework_2(input: &str) -> Vec<Problem> {
+    let mut problems = vec![];
+    let mut lines = vec![];
+    let mut parsed_ops = vec![];
+    let mut parsed_spaces = vec![];
+
+    for line in input.lines() {
+        let mut spaces = 0;
+
+        for c in line.chars() {
+            if c == '+' {
+                if spaces != 0 {
+                    parsed_spaces.push(spaces);
+                    spaces = 0;
+                }
+                parsed_ops.push(ParsedOps::Add);
+            } else if c == '*' {
+                if spaces != 0 {
+                    parsed_spaces.push(spaces);
+                    spaces = 0;
+                }
+                parsed_ops.push(ParsedOps::Multiply);
+            } else if c == ' ' {
+                spaces += 1;
+            }
+        }
+        if !parsed_ops.is_empty() && spaces != 0 {
+            parsed_spaces.push(spaces + 1);
+        }
+        if parsed_ops.is_empty() {
+            lines.push(line);
+        }
+    }
+
+    let mut base_index = 0;
+    for (index, ops) in parsed_ops.iter().enumerate() {
+        let mut problem = vec![];
+
+        for index in 0..parsed_spaces[index] {
+            let mut number = 0;
+            for line in &lines {
+                if let Some(digit) = (line.as_bytes()[base_index + index] as char).to_digit(10) {
+                    number = number * 10 + u64::from(digit);
+                }
+            }
+            problem.push(number);
+        }
+        base_index += parsed_spaces[index] + 1;
         match ops {
             ParsedOps::Add => problems.push(Problem::Add(problem)),
             ParsedOps::Multiply => problems.push(Problem::Multiply(problem)),
@@ -74,15 +132,15 @@ pub fn solve_part_1(problems: &[Problem]) -> u64 {
     result
 }
 
-// #[must_use]
-// pub fn solve_part_2(problems: &[Problem]) -> u64 {
-//     let mut result = 0;
-//     for problem in problems {
-//         result += solve_problem(problem);
-//     }
+#[must_use]
+pub fn solve_part_2(problems: &[Problem]) -> u64 {
+    let mut result = 0;
+    for problem in problems {
+        result += solve_problem(problem);
+    }
 
-//     result
-// }
+    result
+}
 
 #[cfg(test)]
 mod tests {
@@ -94,11 +152,38 @@ mod tests {
  45 64  387 23 
   6 98  215 314
 *   +   *   +  ";
-        let input = parse_homework(input);
+        let input = parse_homework_1(input);
         let result = solve_part_1(&input);
         assert_eq!(result, 4277556);
     }
 
     #[test]
-    fn example_solve_part_2() {}
+    fn example_solve_part_2() {
+        let input = "123 328  51 64 
+ 45 64  387 23 
+  6 98  215 314
+*   +   *   +  ";
+        let input = parse_homework_2(input);
+        let result = solve_part_2(&input);
+        assert_eq!(result, 3263827);
+    }
+
+    #[test]
+    fn custom_solve_part_2() {
+        let input = "13   74
+ 9  174
+ 2 5941
+ 8 5148
++  +   ";
+        let input = parse_homework_2(input);
+        let result = solve_part_2(&input);
+        assert_eq!(result, 1 + 3928 + 55 + 191 + 7744 + 4418);
+
+        let input = "111 111
+222 222
++   +  ";
+        let input = parse_homework_2(input);
+        let result = solve_part_2(&input);
+        assert_eq!(result, 12 + 12 + 12 + 12 + 12 + 12);
+    }
 }

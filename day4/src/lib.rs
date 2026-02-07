@@ -74,12 +74,25 @@ pub fn solve_part_1(grid: &[Vec<Cell>]) -> u64 {
     result
 }
 
-// #[must_use]
-// pub fn solve_part_2(grid: &[Vec<Cell>]) -> u64 {
-//     let mut result = 0;
+#[must_use]
+pub fn solve_part_2(grid: &mut [Vec<Cell>]) -> u64 {
+    let mut result = 0;
+    let mut updated = true;
+    while updated {
+        updated = false;
+        for y in 0..grid.len() {
+            for x in 0..grid[y].len() {
+                if matches!(grid[y][x], Cell::Paper) && is_accessible(grid, y, x) {
+                    result += 1;
+                    grid[y][x] = Cell::Empty;
+                    updated = true;
+                }
+            }
+        }
+    }
 
-//     result
-// }
+    result
+}
 
 #[cfg(test)]
 mod tests {
@@ -103,5 +116,19 @@ mod tests {
     }
 
     #[test]
-    fn example_solve_part_2() {}
+    fn example_solve_part_2() {
+        let input = "..@@.@@@@.
+@@@.@.@.@@
+@@@@@.@.@@
+@.@@@@..@.
+@@.@@@@.@@
+.@@@@@@@.@
+.@.@.@.@@@
+@.@@@.@@@@
+.@@@@@@@@.
+@.@.@@@.@.";
+        let mut input = parse_grid(input);
+        let result = solve_part_2(&mut input);
+        assert_eq!(result, 43);
+    }
 }

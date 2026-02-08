@@ -1,9 +1,12 @@
+use std::collections::HashSet;
+
 pub struct Coord {
-    x: u64,
-    y: u64,
-    z: u64,
+    x: f64,
+    y: f64,
+    z: f64,
 }
 
+#[allow(clippy::cast_precision_loss)]
 #[must_use]
 pub fn parse_coords(input: &str) -> Vec<Coord> {
     let mut coords = vec![];
@@ -15,7 +18,11 @@ pub fn parse_coords(input: &str) -> Vec<Coord> {
             && let Ok(y) = y.parse::<u64>()
             && let Ok(z) = z.parse::<u64>()
         {
-            coords.push(Coord { x, y, z });
+            coords.push(Coord {
+                x: x as f64,
+                y: y as f64,
+                z: z as f64,
+            });
         }
     }
 
@@ -41,32 +48,32 @@ fn create_circuit(junctions: &[(usize, usize)], node: usize) -> Vec<usize> {
     circuit
 }
 
-fn is_directly_connected(junctions: &[(usize, usize)], junction: (usize, usize)) -> bool {
-    junctions.contains(&junction) || junctions.contains(&(junction.1, junction.0))
-}
-
 fn create_shortest_junction(
     coords: &[Coord],
     junctions: &[(usize, usize)],
 ) -> Option<(usize, usize, f64)> {
+    let junctions: HashSet<(usize, usize)> = junctions.iter().copied().collect();
     let mut shortest_junction = None;
     for (index, coord) in coords.iter().enumerate().take(coords.len() - 1) {
         for (other_index, other_coord) in coords.iter().enumerate().skip(index + 1) {
-            if !is_directly_connected(junctions, (index, other_index)) {
-                let distance = ((coord.x as f64 - other_coord.x as f64).powi(2)
-                    + (coord.y as f64 - other_coord.y as f64).powi(2)
-                    + (coord.z as f64 - other_coord.z as f64).powi(2))
-                .sqrt();
-                match shortest_junction {
-                    Some((_, _, shortest_distance)) => {
-                        if distance < shortest_distance {
-                            shortest_junction = Some((index, other_index, distance));
-                        }
+            if junctions.contains(&(index, other_index)) {
+                continue;
+            }
+            let distance = (coord.x - other_coord.x).powi(2)
+                + (coord.y - other_coord.y).powi(2)
+                + (coord.z - other_coord.z).powi(2);
+            match shortest_junction {
+                Some((_, _, shortest_distance)) => {
+                    if distance < shortest_distance {
+                        shortest_junction = Some((index, other_index, distance));
                     }
-                    None => shortest_junction = Some((index, other_index, distance)),
                 }
+                None => shortest_junction = Some((index, other_index, distance)),
             }
         }
+    }
+    if let Some(junction) = &mut shortest_junction {
+        junction.2 = junction.2.sqrt();
     }
 
     shortest_junction

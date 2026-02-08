@@ -14,5 +14,3 @@ fn main() {
     let result = solve_part_1(&input, 1000);
     println!("{result}");
 }
-
-// 1000 is too low

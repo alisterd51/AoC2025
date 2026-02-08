@@ -1,12 +1,11 @@
 use std::collections::HashSet;
 
 pub struct Coord {
-    x: f64,
-    y: f64,
-    z: f64,
+    x: u64,
+    y: u64,
+    z: u64,
 }
 
-#[allow(clippy::cast_precision_loss)]
 #[must_use]
 pub fn parse_coords(input: &str) -> Vec<Coord> {
     let mut coords = vec![];
@@ -18,11 +17,7 @@ pub fn parse_coords(input: &str) -> Vec<Coord> {
             && let Ok(y) = y.parse::<u64>()
             && let Ok(z) = z.parse::<u64>()
         {
-            coords.push(Coord {
-                x: x as f64,
-                y: y as f64,
-                z: z as f64,
-            });
+            coords.push(Coord { x, y, z });
         }
     }
 
@@ -48,6 +43,7 @@ fn create_circuit(junctions: &[(usize, usize)], node: usize) -> Vec<usize> {
     circuit
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn create_shortest_junction(
     coords: &[Coord],
     junctions: &[(usize, usize)],
@@ -59,9 +55,9 @@ fn create_shortest_junction(
             if junctions.contains(&(index, other_index)) {
                 continue;
             }
-            let distance = (coord.x - other_coord.x).powi(2)
-                + (coord.y - other_coord.y).powi(2)
-                + (coord.z - other_coord.z).powi(2);
+            let distance = (coord.x as f64 - other_coord.x as f64).powi(2)
+                + (coord.y as f64 - other_coord.y as f64).powi(2)
+                + (coord.z as f64 - other_coord.z as f64).powi(2);
             match shortest_junction {
                 Some((_, _, shortest_distance)) => {
                     if distance < shortest_distance {
@@ -108,6 +104,23 @@ pub fn solve_part_1(coords: &[Coord], mut to_connected: u64) -> u64 {
     (top[0].len() * top[1].len() * top[2].len()) as u64
 }
 
+#[must_use]
+pub fn solve_part_2(coords: &[Coord]) -> u64 {
+    let mut junctions = vec![];
+    while create_circuit(&junctions, 0).len() < coords.len()
+        && let Some(junction) = create_shortest_junction(coords, &junctions)
+    {
+        let junction = (junction.0, junction.1);
+        junctions.push(junction);
+    }
+
+    let mut result = 0;
+    if let Some(last_junction) = junctions.last() {
+        result = coords[last_junction.0].x * coords[last_junction.1].x;
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,5 +150,32 @@ mod tests {
         let input = parse_coords(input);
         let result = solve_part_1(&input, 10);
         assert_eq!(result, 40);
+    }
+
+    #[test]
+    fn example_solve_part_2() {
+        let input = "162,817,812
+57,618,57
+906,360,560
+592,479,940
+352,342,300
+466,668,158
+542,29,236
+431,825,988
+739,650,466
+52,470,668
+216,146,977
+819,987,18
+117,168,530
+805,96,715
+346,949,466
+970,615,88
+941,993,340
+862,61,35
+984,92,344
+425,690,689";
+        let input = parse_coords(input);
+        let result = solve_part_2(&input);
+        assert_eq!(result, 216 * 117);
     }
 }

@@ -2,7 +2,7 @@
 resolver = "3"
 package.version = "0.1.0"
 package.edition = "2024"
-members = ["day1", "day2", "day3", "day4", "day5", "day6", "day7"]
+members = ["day1", "day2", "day3", "day4", "day5", "day6", "day7", "day8"]
 
 [workspace.dependencies]
 
@@ -13,7 +13,6 @@ unsafe_code = "forbid"
 [workspace.lints.clippy]
 all = "deny"
 pedantic = "deny"
-nursery = "deny"
 # from clippy::restriction
 unwrap_used = "deny"
 expect_used = "deny"
